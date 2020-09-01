@@ -1,4 +1,4 @@
-const { User, Users, profiles, profilegroup } = require('../core/connection');
+const { User, Users, profiles, profilegroup, profilemaster } = require('../core/connection');
 var express = require('express');
 var app = express();
 var Sequelize = require('sequelize');
@@ -340,60 +340,90 @@ exports.getprofile = async (req, res) => {
 }
 
 exports.updateProfile = async (req, res) => {
+    // var profile =await profiles.findOne(profileId);
+    profiles.update( req.body , { where : { id : req.params.profileId }})
+    .then(user => {
+        res.send("Success");
+    })
+}
+
+// exports.updateGroup = async (req, res) => {
+//     // var profile =await profiles.findOne(profileId);
+//     profilegroup.update( req.body , { where : { id : req.params.profileId }})
+//     .then(user => {
+//         res.send("Success");
+//     })
+// }
+
+exports.updateProfiles = async (req, res) => {
     const { empId, profileId } = req.params
 
-        var profile = await profiles.findByPk(profileId)
+        var profile = await profiles.findOne(profileId)
         var groupId = profile.group_id
 
-        profilegroup.findByPk(groupId, { include: ['profiles']})
-        .then (async p1 => {
+        profilegroup.findOne(groupId, { include: ['profiles']})
+        .then (async result => {
             
             if(req.body.status == 0){
                 return res.status(200).send({message: "Status is already updated"});
-            }else if(req.body.status == 1 || req.body.status == 2){
+            }
+            
+            else if(req.body.status == 1 || req.body.status == 2){
+                console.log(JSON.parse(JSON.stringify(result.profiles)));
                 
-                for(i=0; i<p1.profiles.length; i++){
-                    if(p1.profiles[i].status == 0){
+                for(i=0; i<result.profiles.length; i++){
+                    if(result.profiles[i].status == 0){
                         flag = 0
                     }
 
-                    if(p1.profiles[i].status == 1){
-                        if(p1.profiles[i].status == 1 && req.body.status == 1){
-                            if(p1.profiles[i].cegedim_customer_id_x.toLowerCase() == p1.profiles[i].cegedim_customer_id_y.toLowerCase() &&
-                                p1.profiles[i].doctor_name_x.toLowerCase() == p1.profiles[i].doctor_name_y.toLowerCase() &&
-                                p1.profiles[i].speciality_desc_x.toLowerCase() == p1.profiles[i].speciality_desc_y.toLowerCase() &&
-                                p1.profiles[i].locality_x.toLowerCase() == p1.profiles[i].locality_y.toLowerCase() &&
-                                p1.profiles[i].city_x.toLowerCase() == p1.profiles[i].city_y.toLowerCase() &&
-                                p1.profiles[i].postal_area_x.toLowerCase() == p1.profiles[i].postal_area_y.toLowerCase() &&
-                                p1.profiles[i].pincode_x.toLowerCase() == p1.profiles[i].pincode_y.toLowerCase() &&
-                                p1.profiles[i].district_x_name.toLowerCase() == p1.profiles[i].district_y_name.toLowerCase() &&
-                                p1.profiles[i].state_x.toLowerCase() == p1.profiles[i].state_y.toLowerCase() &&
-                                p1.profiles[i].email_address_x.toLowerCase() == p1.profiles[i].email_address_y.toLowerCase() &&
-                                p1.profiles[i].phone_number_x.toLowerCase() == p1.profiles[i].phone_number_y.toLowerCase() &&
-                                p1.profiles[i].registration_number_x.toLowerCase() == p1.profiles[i].registration_number_y.toLowerCase() &&
-                                p1.profiles[i].images_x.toLowerCase() == p1.profiles[i].images_y.toLowerCase() &&
-                                p1.profiles[i].location_x.toLowerCase() == p1.profiles[i].location_x.toLowerCase())
+                    if(result.profiles[i].status == 1){
+                        if(result.profiles[i].status == 1 && req.body.status == 1){
+
+                            if(result.profiles[i].cegedim_customer_id_x.toLowerCase() == result.profiles[i].cegedim_customer_id_y.toLowerCase() &&
+                                result.profiles[i].doctor_name_x.toLowerCase() == result.profiles[i].doctor_name_y.toLowerCase() &&
+                                result.profiles[i].speciality_desc_x.toLowerCase() == result.profiles[i].speciality_desc_y.toLowerCase() &&
+                                result.profiles[i].locality_x.toLowerCase() == result.profiles[i].locality_y.toLowerCase() &&
+                                result.profiles[i].city_x.toLowerCase() == result.profiles[i].city_y.toLowerCase() &&
+                                result.profiles[i].postal_area_x.toLowerCase() == result.profiles[i].postal_area_y.toLowerCase() &&
+                                result.profiles[i].pincode_x.toLowerCase() == result.profiles[i].pincode_y.toLowerCase() &&
+                                result.profiles[i].district_x_name.toLowerCase() == result.profiles[i].district_y_name.toLowerCase() &&
+                                result.profiles[i].state_x.toLowerCase() == result.profiles[i].state_y.toLowerCase() &&
+                                result.profiles[i].email_address_x.toLowerCase() == result.profiles[i].email_address_y.toLowerCase() &&
+                                result.profiles[i].phone_number_x.toLowerCase() == result.profiles[i].phone_number_y.toLowerCase() &&
+                                result.profiles[i].registration_number_x.toLowerCase() == result.profiles[i].registration_number_y.toLowerCase() &&
+                                result.profiles[i].images_x.toLowerCase() == result.profiles[i].images_y.toLowerCase() &&
+                                result.profiles[i].location_x.toLowerCase() == result.profiles[i].location_x.toLowerCase())
                             {
-                                p1.update({ status : 1 })
+                                //profile status = 1, req.body.status = 1 and all x and y data also same; 
+                                console.log("reach at status 1");
+                                result.update({ status : 1 })
                                 flag = 1
                             }
                             else{
-                                p1.update({ status : 3 })
+                                //profile status = 1 and req.body.status = 1;
+                                console.log("reach at status 3");
+                                result.update({ status : 3 })
                                 flag = 3
                             }
                         }
                     }                    
 
-                    if(p1.profiles[i].status == 2){
-                            p1.update({ status : 2 })
-                            flag = 2
+                    if(result.profiles[i].status == 2){
+                        //any status is 2 but if any status is 0 then no changes
+                        console.log("reach at status 2");
+                        result.update(
+                            { 
+                                status : 2,
+                                reason: req.body.reason
+                         })
+                        flag = 2
                     }
                 }
                 if(flag == 0){
-                    return res.send("Status is 0")
+                    return res.send("Status is 0, No need to update.")
                 }else{
-                    return res.send(p1)                    
-                }
+                    return res.send(result)                    
+                }   
                 
             }else{
                 return res.status(200).send({message: "No Status found in req.body"})

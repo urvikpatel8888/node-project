@@ -43,7 +43,7 @@ const password = req.body.password;
                         email: email
                     };
                     var token = jwt.sign(payload, app.get('superSecret'), {
-                        expiresIn: '1h' // token will expires in 1 hour, you can change from here.
+                        expiresIn: '7d' // token will expires in 1 hour, you can change from here.
                     });
                     res.json({
                         success: true,

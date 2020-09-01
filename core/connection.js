@@ -7,6 +7,7 @@ const UserProfile = require('../db/models/userProfile');
 const regUser = require('../db/models/login');
 const profile = require('../db/models/profiles');
 const profilesgroup = require('../db/models/profilegroup');
+const profilesmaster = require('../db/models/profilemaster');
 
 config = config[process.env.NODE_ENV];
 if(!config){
@@ -44,6 +45,7 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
   const newlogin = regUser(sequelize, Sequelize);
   const profiles = profile(sequelize, Sequelize);
   const profilegroup = profilesgroup(sequelize, Sequelize);
+  const profilemaster = profilesmaster(sequelize, Sequelize);
 
   
   Users.hasOne(User, { foreignKey: 'allId' });
@@ -57,5 +59,5 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
   sequelize.sync();
 
   module.exports = {
-        sequelize, User, Users, user_userdata_mapping, newlogin, profiles, profilegroup
+        sequelize, User, Users, user_userdata_mapping, newlogin, profiles, profilegroup, profilemaster
   }

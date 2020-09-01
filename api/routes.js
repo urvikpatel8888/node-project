@@ -27,7 +27,8 @@ module.exports = (app) => {
 
     app.get('/psr/list/:id', verify.verifyToken, crud.getList);
     app.get('/psr/list/:empId/:profileId', verify.verifyToken, crud.getprofile);
-    app.put('/psr/list/:empId/:profileId', verify.verifyToken, crud.updateProfile);
+    app.put('/psr/list/:empId/:profileId', verify.verifyToken, crud.updateProfiles);
+    app.put('/psr/list/:profileId', verify.verifyToken, crud.updateProfile);
   
     /* Register and Auth */
     app.post('/reg', login.regUser);
