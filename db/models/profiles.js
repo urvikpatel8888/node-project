@@ -6,7 +6,7 @@ const Sequelize = require('sequelize');
 // const ProfileGroup = require('./profilegroup')
 
 module.exports = (sequelize, DataTypes) => {
-  const Profiles = sequelize.define('profiles', {
+    return sequelize.define('profiles', {
     state_name: DataTypes.STRING(64),
     emp_position_code: DataTypes.INTEGER,
     emp_division: DataTypes.STRING(64),
@@ -64,17 +64,17 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE
     }
   }, {
-    sequelize,
-    modelName: 'processed_profiles',
+    // sequelize,
+    // modelName: 'processed_profiles',
     timestamps: false,
     underscored: true
   });
   // console.log(framework.connection.models.ProfileGroup);
-  Profiles.associate = function(models){
-    Profiles.belongsTo(models.profilegroup,{
-      foreignKey: 'group_id', 
-      as: 'group'
-    })
-  }
-  return Profiles;
+  // Profiles.associate = function(models){
+  //   Profiles.belongsTo(models.profilegroup,{
+  //     foreignKey: 'group_id', 
+  //     as: 'group'
+  //   })
+  // }
+  // return Profiles;
 };

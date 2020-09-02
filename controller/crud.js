@@ -327,7 +327,7 @@ exports.getList = (req, res) => {
 exports.getprofile = async (req, res) => {
     const { empId, profileId } = req.params
 
-        var profile = await profiles.findOne(profileId)
+        var profile = await profiles.findByPk(profileId)
         profile = JSON.parse(JSON.stringify(profile))
         if(!profile){
             profile = {};
@@ -355,23 +355,50 @@ exports.updateProfile = async (req, res) => {
 //     })
 // }
 
+// exports.updateProfiles = async (req, res) => {
+//         const { empId, profileId } = req.params
+//     await profiles.findAll()
+//     .then(user => {
+//         res.send(user);
+//     })
+//     // profilegroup.update( req.body , { where : { id : req.params.profileId }})
+//     // .then(user => {
+//     //     res.send("Success");
+//     // })
+
+// }
+
+// exports.updateProfiles = async (req, res) => {
+//     const { empId, profileId } = req.params
+// await profiles.findByPk(profileId)
+// .then(user => {
+//     res.send(user);
+// })
+// // profilegroup.update( req.body , { where : { id : req.params.profileId }})
+// // .then(user => {
+// //     res.send("Success");
+// // })
+// }
+
 exports.updateProfiles = async (req, res) => {
     const { empId, profileId } = req.params
-
-        var profile = await profiles.findOne(profileId)
+    // console.log(profileId);
+        var profile = await profiles.findByPk(profileId)
         var groupId = profile.group_id
-
-        profilegroup.findOne(groupId, { include: ['profiles']})
+        console.log(groupId);   
+        profilegroup.findByPk(groupId, { include: ['profiles']})
         .then (async result => {
-            
+            console.log(JSON.stringify(result));
             if(req.body.status == 0){
                 return res.status(200).send({message: "Status is already updated"});
             }
             
             else if(req.body.status == 1 || req.body.status == 2){
-                console.log(JSON.parse(JSON.stringify(result.profiles)));
+                // console.log(JSON.parse(JSON.stringify(result.profiles)));
+                
                 
                 for(i=0; i<result.profiles.length; i++){
+                    console.log(result.profiles[1]);
                     if(result.profiles[i].status == 0){
                         flag = 0
                     }
@@ -406,9 +433,18 @@ exports.updateProfiles = async (req, res) => {
                                 flag = 3
                             }
                         }
+                        else{
+                            //profile status = 1 and req.body.status = 2;
+                            console.log("reach at status 2");
+                            result.update(
+                                {
+                                     status : 2,
+                                     reason: req.body.reason
+                                })
+                            flag = 2
+                        }
                     }                    
-
-                    if(result.profiles[i].status == 2){
+                    if(result.profiles[i].status == 2 || req.body.status == 2){
                         //any status is 2 but if any status is 0 then no changes
                         console.log("reach at status 2");
                         result.update(
@@ -423,8 +459,7 @@ exports.updateProfiles = async (req, res) => {
                     return res.send("Status is 0, No need to update.")
                 }else{
                     return res.send(result)                    
-                }   
-                
+                }           
             }else{
                 return res.status(200).send({message: "No Status found in req.body"})
             }

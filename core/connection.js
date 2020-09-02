@@ -54,6 +54,13 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
   Users.belongsToMany(User, { through: user_userdata_mapping });
   User.belongsToMany(Users, { through: user_userdata_mapping });
 
+  profiles.belongsTo(profilegroup, {
+    foreignKey: 'group_id', as: 'group'
+  });
+  profilegroup.hasMany(profiles, {
+    foreignKey: 'group_id', as: 'profiles'
+  })
+
 //   framework = {connection : sequelize};
   
   sequelize.sync();

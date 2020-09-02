@@ -5,7 +5,7 @@
 const Sequelize = require('sequelize');
 // const Profiles = require('./profiles');
 module.exports = (sequelize, DataTypes) => {
-  const ProfileGroup = sequelize.define('profilegroup', {
+  return sequelize.define('profilegroup', {
     status: DataTypes.INTEGER,
     created_at: {
       allowNull: false,
@@ -18,16 +18,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE
     }
   }, {
-    sequelize,
-    modelName: 'profile_set_status',
+    // sequelize,
+    // modelName: 'profilegroup',
     timestamps: false,
     underscored: true
   });
-  ProfileGroup.associate = function(models){
-    ProfileGroup.hasMany(models.profiles, {
-      foreignKey: 'group_id', 
-      as: 'profiles' 
-    })
-  }
-  return ProfileGroup;
+  // ProfileGroup.associate = function(models){
+  //   ProfileGroup.hasMany(models.profiles, {
+  //     foreignKey: 'group_id', 
+  //     as: 'profiles' 
+  //   })
+  // }
+  // return ProfileGroup;
 };
