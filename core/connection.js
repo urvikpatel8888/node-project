@@ -50,7 +50,7 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
   
   Users.hasOne(User, { foreignKey: 'allId' });
   User.belongsTo(Users, { foreignKey: 'allId' , targetKey: 'allId' });
-  Users.hasMany(User, { as: "user", foreignKey: 'allId' });
+  Users.hasMany(User, { foreignKey: 'allId' });
   Users.belongsToMany(User, { through: user_userdata_mapping });
   User.belongsToMany(Users, { through: user_userdata_mapping });
 
@@ -60,7 +60,8 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
   profilegroup.hasMany(profiles, {
     foreignKey: 'group_id', as: 'profiles'
   })
-
+  // console.log(profiles);
+  // console.log(profilesgroup);
 //   framework = {connection : sequelize};
   
   sequelize.sync();

@@ -382,7 +382,8 @@ exports.updateProfile = async (req, res) => {
 
 exports.updateProfiles = async (req, res) => {
     const { empId, profileId } = req.params
-    // console.log(profileId);
+        console.log(profiles);
+        console.log(profilegroup);
         var profile = await profiles.findByPk(profileId)
         var groupId = profile.group_id
         console.log(groupId);   
@@ -399,11 +400,12 @@ exports.updateProfiles = async (req, res) => {
                 
                 for(i=0; i<result.profiles.length; i++){
                     console.log(result.profiles[1]);
-                    if(result.profiles[i].status == 0){
+                    if(result.profiles[i].status == 0 || req.body.status == 0){
                         flag = 0
                     }
 
                     if(result.profiles[i].status == 1){
+                        
                         if(result.profiles[i].status == 1 && req.body.status == 1){
 
                             if(result.profiles[i].cegedim_customer_id_x.toLowerCase() == result.profiles[i].cegedim_customer_id_y.toLowerCase() &&
@@ -444,7 +446,7 @@ exports.updateProfiles = async (req, res) => {
                             flag = 2
                         }
                     }                    
-                    if(result.profiles[i].status == 2 || req.body.status == 2){
+                    if((result.profiles[i].status == 2 || req.body.status == 2) && result.profile[i].status != 0){
                         //any status is 2 but if any status is 0 then no changes
                         console.log("reach at status 2");
                         result.update(
