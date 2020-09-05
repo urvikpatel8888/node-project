@@ -57,6 +57,8 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
   profiles.belongsTo(profilegroup, {
     foreignKey: 'group_id', as: 'group'
   });
+// console.log(profiles);
+
   profilegroup.hasMany(profiles, {
     foreignKey: 'group_id', as: 'profiles'
   })

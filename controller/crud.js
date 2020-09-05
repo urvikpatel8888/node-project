@@ -382,14 +382,15 @@ exports.updateProfile = async (req, res) => {
 
 exports.updateProfiles = async (req, res) => {
     const { empId, profileId } = req.params
-        console.log(profiles);
-        console.log(profilegroup);
+        //console.log(profiles);
+        //console.log(profilegroup);
         var profile = await profiles.findByPk(profileId)
         var groupId = profile.group_id
-        console.log(groupId);   
+        // console.log(groupId);   
         profilegroup.findByPk(groupId, { include: ['profiles']})
         .then (async result => {
-            console.log(JSON.stringify(result));
+            // console.log(JSON.stringify(result));
+
             if(req.body.status == 0){
                 return res.status(200).send({message: "Status is already updated"});
             }
@@ -401,11 +402,12 @@ exports.updateProfiles = async (req, res) => {
                 for(i=0; i<result.profiles.length; i++){
                     console.log(result.profiles[1]);
                     if(result.profiles[i].status == 0 || req.body.status == 0){
-                        flag = 0
+                        flag = 0;
+                        break;
                     }
 
                     if(result.profiles[i].status == 1){
-                        
+                        console.log("req status", req.body.status);
                         if(result.profiles[i].status == 1 && req.body.status == 1){
 
                             if(result.profiles[i].cegedim_customer_id_x.toLowerCase() == result.profiles[i].cegedim_customer_id_y.toLowerCase() &&
@@ -425,39 +427,57 @@ exports.updateProfiles = async (req, res) => {
                             {
                                 //profile status = 1, req.body.status = 1 and all x and y data also same; 
                                 console.log("reach at status 1");
-                                result.update({ status : 1 })
-                                flag = 1
+                                result.update({ status : 1 });
+                                profiles.update({
+                                    status : 1
+                                },{ where: { id : profileId }});
+                                flag = 1;
+                                break;
                             }
                             else{
                                 //profile status = 1 and req.body.status = 1;
                                 console.log("reach at status 3");
-                                result.update({ status : 3 })
+                                result.update({ status : 3 });
+                                profiles.update({
+                                    status : 3
+                                },{ where: { id : profileId }});
                                 flag = 3
                             }
                         }
                         else{
                             //profile status = 1 and req.body.status = 2;
+                            console.log("reason to change status", req.body.status);
                             console.log("reach at status 2");
                             result.update(
                                 {
                                      status : 2,
-                                     reason: req.body.reason
-                                })
+                                });
+                            profiles.update({
+                                status : 2,
+                                reason: req.body.reason
+                                },{ where: { id : profileId }});
                             flag = 2
                         }
                     }                    
-                    if((result.profiles[i].status == 2 || req.body.status == 2) && result.profile[i].status != 0){
+                    if(result.profiles[i].status == 2 || req.body.status == 2){
                         //any status is 2 but if any status is 0 then no changes
+                        console.log("reason to change status", req.body.status);
                         console.log("reach at status 2");
                         result.update(
                             { 
                                 status : 2,
-                                reason: req.body.reason
-                         })
+                         });
+                        profiles.update({
+                            status : 2,
+                            reason: req.body.reason
+                        },{ where: { id : profileId }});
                         flag = 2
                     }
                 }
                 if(flag == 0){
+                    // result.update({
+                    //     status : 0
+                    // });
                     return res.send("Status is 0, No need to update.")
                 }else{
                     return res.send(result)                    

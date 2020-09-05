@@ -10,6 +10,8 @@ module.exports = (app) => {
     app.post('/user',verify.verifyToken, crud.addUser);
     app.put('/user/:id',verify.verifyToken, crud.updateUser);
     app.delete('/user/:id',verify.verifyToken, crud.deleteUser);
+
+    /* Association apis */
     app.get('/belongsto/:id',verify.verifyToken, crud.belongsToGet);
     app.post('/belongsto',verify.verifyToken, crud.belongsToPost);
     app.put('/belongsto/:id',verify.verifyToken, crud.belongsToPut);
@@ -25,6 +27,7 @@ module.exports = (app) => {
     app.delete('/belongstomany/users/:id',verify.verifyToken, crud.belongsToManyDeleteUsers);
     app.get('/belongstomany/user',verify.verifyToken, crud.belongsToManyGetUser);
 
+    /* psr apis */
     app.get('/psr/list/:id', verify.verifyToken, crud.getList);
     app.get('/psr/list/:empId/:profileId', verify.verifyToken, crud.getprofile);
     app.put('/psr/list/:empId/:profileId', verify.verifyToken, crud.updateProfiles);
