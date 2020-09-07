@@ -428,20 +428,43 @@ exports.updateProfiles = async (req, res) => {
                                 //profile status = 1, req.body.status = 1 and all x and y data also same; 
                                 console.log("reach at status 1");
                                 result.update({ status : 1 });
-                                profiles.update({
-                                    status : 1
-                                },{ where: { id : profileId }});
-                                flag = 1;
-                                break;
+                                // profiles.update({
+                                //     status : 1
+                                // },{ where: { id : profileId }});
+                                // flag = 1;
+                                // break;
+                                if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
+                                    profiles.update({
+                                        status : 1,
+                                        reason: req.body.reason,
+                                        address: req.body.address
+                                        },{ where: { id : profileId }});
+                                    flag = 1
+                                    break;
+                                }
+                                else{
+                                    console.log("Not same");
+                                }
                             }
                             else{
                                 //profile status = 1 and req.body.status = 1;
                                 console.log("reach at status 3");
                                 result.update({ status : 3 });
-                                profiles.update({
-                                    status : 3
-                                },{ where: { id : profileId }});
-                                flag = 3
+                                // profiles.update({
+                                //     status : 3
+                                // },{ where: { id : profileId }});
+                                // flag = 3
+                                if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
+                                    profiles.update({
+                                        status : 3,
+                                        reason: req.body.reason,
+                                        address: req.body.address
+                                        },{ where: { id : profileId }});
+                                    flag = 3
+                                }
+                                else{
+                                    console.log("Not same");
+                                }
                             }
                         }
                         else{
@@ -452,11 +475,17 @@ exports.updateProfiles = async (req, res) => {
                                 {
                                      status : 2,
                                 });
-                            profiles.update({
-                                status : 2,
-                                reason: req.body.reason
-                                },{ where: { id : profileId }});
-                            flag = 2
+                            if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
+                                profiles.update({
+                                    status : 2,
+                                    reason: req.body.reason,
+                                    address: req.body.address
+                                    },{ where: { id : profileId }});
+                                flag = 2
+                            }
+                            else{
+                                console.log("Not same");
+                            }
                         }
                     }                    
                     if(result.profiles[i].status == 2 || req.body.status == 2){
@@ -467,11 +496,21 @@ exports.updateProfiles = async (req, res) => {
                             { 
                                 status : 2,
                          });
-                        profiles.update({
-                            status : 2,
-                            reason: req.body.reason
-                        },{ where: { id : profileId }});
-                        flag = 2
+                        //  console.log("ceg",result.profiles[i].cegedim_customer_id_x);
+                        //  console.log("emp",result.profiles[i].emp_position_code);
+                         if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
+                            profiles.update({
+                                status : 2,
+                                reason: req.body.reason,
+                                locality_x: req.body.address.address,
+                                locality_y: req.body.address.address,
+                                postal_area_x: req.body.address.postal_code,
+                                postal_area_y: req.body.address.postal_code,
+                                },{ where: { id : profileId }});
+                            flag = 2
+                        }else{
+                            console.log("Not same");
+                        }
                     }
                 }
                 if(flag == 0){
