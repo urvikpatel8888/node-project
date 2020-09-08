@@ -400,7 +400,7 @@ exports.updateProfiles = async (req, res) => {
                 
                 
                 for(i=0; i<result.profiles.length; i++){
-                    console.log(result.profiles[1]);
+                    // console.log(result.profiles[1]);
                     if(result.profiles[i].status == 0 || req.body.status == 0){
                         flag = 0;
                         break;
@@ -428,89 +428,102 @@ exports.updateProfiles = async (req, res) => {
                                 //profile status = 1, req.body.status = 1 and all x and y data also same; 
                                 console.log("reach at status 1");
                                 result.update({ status : 1 });
-                                // profiles.update({
-                                //     status : 1
-                                // },{ where: { id : profileId }});
-                                // flag = 1;
-                                // break;
-                                if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
-                                    profiles.update({
-                                        status : 1,
-                                        reason: req.body.reason,
-                                        address: req.body.address
-                                        },{ where: { id : profileId }});
-                                    flag = 1
-                                    break;
-                                }
-                                else{
-                                    console.log("Not same");
-                                }
+                                profiles.update({
+                                    status : 1
+                                },{ where: { id : profileId }});
+                                flag = 1;
+                                break;
+                                // if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
+                                //     profiles.update({
+                                //         status : 1,
+                                //         reason: req.body.reason,
+                                //         address: req.body.address
+                                //         },{ where: { id : profileId }});
+                                //     flag = 1
+                                //     break;
+                                // }
+                                // else{
+                                //     console.log("Not same");
+                                // }
                             }
                             else{
                                 //profile status = 1 and req.body.status = 1;
                                 console.log("reach at status 3");
                                 result.update({ status : 3 });
-                                // profiles.update({
-                                //     status : 3
-                                // },{ where: { id : profileId }});
-                                // flag = 3
-                                if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
-                                    profiles.update({
-                                        status : 3,
-                                        reason: req.body.reason,
-                                        address: req.body.address
-                                        },{ where: { id : profileId }});
-                                    flag = 3
-                                }
-                                else{
-                                    console.log("Not same");
-                                }
+                                profiles.update({
+                                    status : 3
+                                },{ where: { id : profileId }});
+                                flag = 3
+                                // if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
+                                //     profiles.update({
+                                //         status : 3,
+                                //         reason: req.body.reason,
+                                //         address: req.body.address
+                                //         },{ where: { id : profileId }});
+                                //     flag = 3
+                                // }
+                                // else{
+                                //     console.log("Not same");
+                                // }
                             }
                         }
                         else{
                             //profile status = 1 and req.body.status = 2;
                             console.log("reason to change status", req.body.status);
                             console.log("reach at status 2");
+                            var addressObj = JSON.parse(JSON.stringify(req.body.address))
+                            console.log("req.body.address",addressObj);
                             result.update(
                                 {
                                      status : 2,
                                 });
-                            if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
                                 profiles.update({
                                     status : 2,
                                     reason: req.body.reason,
-                                    address: req.body.address
+                                    address_x: addressObj
                                     },{ where: { id : profileId }});
                                 flag = 2
-                            }
-                            else{
-                                console.log("Not same");
-                            }
+                                break;
+                            // if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
+                            //     profiles.update({
+                            //         status : 2,
+                            //         reason: req.body.reason,
+                            //         address: req.body.address
+                            //         },{ where: { id : profileId }});
+                            //     flag = 2
+                            // }
+                            // else{
+                            //     console.log("Not same");
+                            // }
                         }
                     }                    
                     if(result.profiles[i].status == 2 || req.body.status == 2){
                         //any status is 2 but if any status is 0 then no changes
-                        console.log("reason to change status", req.body.status);
+                        console.log("reason to change status1", req.body.status);
                         console.log("reach at status 2");
                         result.update(
                             { 
                                 status : 2,
                          });
+                        profiles.update({
+                            status : 2,
+                            reason: req.body.reason,
+                            address_x: addressObj
+                            },{ where: { id : profileId }});
+                        flag = 2
+                        break;
                         //  console.log("ceg",result.profiles[i].cegedim_customer_id_x);
                         //  console.log("emp",result.profiles[i].emp_position_code);
-                         if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
-                            profiles.update({
-                                status : 2,
-                                reason: req.body.reason,
-                                locality_x: req.body.address.address,
-                                locality_y: req.body.address.address,
-                                postal_area_x: req.body.address.postal_code,
-                                postal_area_y: req.body.address.postal_code,
-                                },{ where: { id : profileId }});
-                            flag = 2
-                        }else{
-                            console.log("Not same");
-                        }
+                        //  if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
+                        //     profiles.update({
+                        //         status : 2,
+                        //         reason: req.body.reason,
+                        //         address_x: addressObj
+                        //         },{ where: { id : profileId }});
+                        //     flag = 2
+                        // }else{
+                        //     console.log("Not same");
+                        // }
                     }
                 }
                 if(flag == 0){
@@ -518,7 +531,16 @@ exports.updateProfiles = async (req, res) => {
                     //     status : 0
                     // });
                     return res.send("Status is 0, No need to update.")
-                }else{
+                }else{    
+                    if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
+                        var addressObj = JSON.parse(JSON.stringify(req.body.address))
+                        console.log("req.body.address",addressObj);
+                        for(i=0; i<result.profiles.length; i++){
+                            profiles.update({
+                                address_x: addressObj
+                                },{ where: { cegedim_customer_id_x : req.body.cegedim_customer_id_x, emp_position_code: empId }});
+                            }
+                        }
                     return res.send(result)                    
                 }           
             }else{

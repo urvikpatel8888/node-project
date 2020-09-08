@@ -32,6 +32,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     images_x: DataTypes.TEXT,
     location_x: DataTypes.STRING(256),
+    address_x: {
+      type: DataTypes.JSON(),
+      address : DataTypes.STRING(256),
+      lat: DataTypes.STRING(64),
+      long: DataTypes.STRING(64),
+      postal_code: DataTypes.STRING(64)
+    },
     cegedim_customer_id_y: DataTypes.STRING(64),
     doctor_name_y: DataTypes.STRING(216),
     speciality_desc_y: DataTypes.STRING(216),
