@@ -397,7 +397,7 @@ exports.updateProfiles = async (req, res) => {
             
             else if(req.body.status == 1 || req.body.status == 2){
                 // console.log(JSON.parse(JSON.stringify(result.profiles)));
-                
+                // var flag = 0;    
                 
                 for(i=0; i<result.profiles.length; i++){
                     // console.log(result.profiles[1]);
@@ -428,43 +428,13 @@ exports.updateProfiles = async (req, res) => {
                                 //profile status = 1, req.body.status = 1 and all x and y data also same; 
                                 console.log("reach at status 1");
                                 result.update({ status : 1 });
-                                profiles.update({
-                                    status : 1
-                                },{ where: { id : profileId }});
-                                flag = 1;
-                                break;
-                                // if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
-                                //     profiles.update({
-                                //         status : 1,
-                                //         reason: req.body.reason,
-                                //         address: req.body.address
-                                //         },{ where: { id : profileId }});
-                                //     flag = 1
-                                //     break;
-                                // }
-                                // else{
-                                //     console.log("Not same");
-                                // }
+                                flag = 1;   
                             }
                             else{
                                 //profile status = 1 and req.body.status = 1;
                                 console.log("reach at status 3");
                                 result.update({ status : 3 });
-                                profiles.update({
-                                    status : 3
-                                },{ where: { id : profileId }});
-                                flag = 3
-                                // if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
-                                //     profiles.update({
-                                //         status : 3,
-                                //         reason: req.body.reason,
-                                //         address: req.body.address
-                                //         },{ where: { id : profileId }});
-                                //     flag = 3
-                                // }
-                                // else{
-                                //     console.log("Not same");
-                                // }
+                                flag = 3;
                             }
                         }
                         else{
@@ -475,26 +445,10 @@ exports.updateProfiles = async (req, res) => {
                             console.log("req.body.address",addressObj);
                             result.update(
                                 {
-                                     status : 2,
+                                     status : 2
                                 });
-                                profiles.update({
-                                    status : 2,
-                                    reason: req.body.reason,
-                                    address_x: addressObj
-                                    },{ where: { id : profileId }});
-                                flag = 2
+                                flag = 2;
                                 break;
-                            // if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
-                            //     profiles.update({
-                            //         status : 2,
-                            //         reason: req.body.reason,
-                            //         address: req.body.address
-                            //         },{ where: { id : profileId }});
-                            //     flag = 2
-                            // }
-                            // else{
-                            //     console.log("Not same");
-                            // }
                         }
                     }                    
                     if(result.profiles[i].status == 2 || req.body.status == 2){
@@ -505,44 +459,46 @@ exports.updateProfiles = async (req, res) => {
                             { 
                                 status : 2,
                          });
-                        profiles.update({
-                            status : 2,
-                            reason: req.body.reason,
-                            address_x: addressObj
-                            },{ where: { id : profileId }});
-                        flag = 2
-                        break;
-                        //  console.log("ceg",result.profiles[i].cegedim_customer_id_x);
-                        //  console.log("emp",result.profiles[i].emp_position_code);
-                        //  if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
-                        //     profiles.update({
-                        //         status : 2,
-                        //         reason: req.body.reason,
-                        //         address_x: addressObj
-                        //         },{ where: { id : profileId }});
-                        //     flag = 2
-                        // }else{
-                        //     console.log("Not same");
-                        // }
+                        flag = 2;
                     }
                 }
+                console.log("flag", flag);
                 if(flag == 0){
-                    // result.update({
-                    //     status : 0
-                    // });
                     return res.send("Status is 0, No need to update.")
-                }else{    
-                    if( result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
-                        var addressObj = JSON.parse(JSON.stringify(req.body.address))
-                        console.log("req.body.address",addressObj);
-                        for(i=0; i<result.profiles.length; i++){
+                }
+                if(flag == 1){
+                    profiles.update({
+                        status : 1
+                    },{ where: { id : profileId }});
+                }
+                if(flag == 2){
+                    profiles.update({
+                        status : 2,
+                        reason: req.body.reason,
+                        },{ where: { id : profileId }});
+                }
+                if(flag == 3){
+                    console.log("Group Status is 3");
+                }
+                
+                for(i=0; i<result.profiles.length; i++){
+                    if(result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
+                    var addressObj = JSON.parse(JSON.stringify(req.body.address))
+                    // console.log("req.body.address",addressObj);
+                        // console.log(result.profiles[1].address_x);
+                        if(result.profiles[i].address_x.address == undefined || result.profiles[i].address_x.address == null){
+                            // console.log(result.profiles[i].address_x.address); 
+                            // console.log("updateed profile: ", result.profiles[i].id);
                             profiles.update({
-                                address_x: addressObj
-                                },{ where: { cegedim_customer_id_x : req.body.cegedim_customer_id_x, emp_position_code: empId }});
-                            }
+                            address_x: addressObj
+                            },{ where: { cegedim_customer_id_x : req.body.cegedim_customer_id_x, emp_position_code: empId }});
+                        }else{
+                            console.log("updateed profile: ", result.profiles[i].id);
+                            console.log("Addres updated already");
                         }
-                    return res.send(result)                    
-                }           
+                    }
+                }
+                return res.send(result)                               
             }else{
                 return res.status(200).send({message: "No Status found in req.body"})
             }
