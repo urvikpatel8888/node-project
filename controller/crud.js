@@ -1,4 +1,4 @@
-const { User, Users, profiles, profilegroup, profilemaster } = require('../core/connection');
+const { User, Users, profiles, profilegroup, profilemaster, unique_profile } = require('../core/connection');
 var express = require('express');
 var app = express();
 var Sequelize = require('sequelize');
@@ -382,125 +382,208 @@ exports.updateProfile = async (req, res) => {
 
 exports.updateProfiles = async (req, res) => {
     const { empId, profileId } = req.params
-        //console.log(profiles);
-        //console.log(profilegroup);
         var profile = await profiles.findByPk(profileId)
         var groupId = profile.group_id
-        // console.log(groupId);   
-        profilegroup.findByPk(groupId, { include: ['profiles']})
-        .then (async result => {
-            // console.log(JSON.stringify(result));
-
-            if(req.body.status == 0){
-                return res.status(200).send({message: "Status is already updated"});
-            }
-            
-            else if(req.body.status == 1 || req.body.status == 2){
-                // console.log(JSON.parse(JSON.stringify(result.profiles)));
-                // var flag = 0;    
-                
-                for(i=0; i<result.profiles.length; i++){
-                    // console.log(result.profiles[1]);
-                    if(result.profiles[i].status == 0 || req.body.status == 0){
-                        flag = 0;
-                        break;
-                    }
-
-                    if(result.profiles[i].status == 1){
-                        console.log("req status", req.body.status);
-                        if(result.profiles[i].status == 1 && req.body.status == 1){
-
-                            if(result.profiles[i].cegedim_customer_id_x.toLowerCase() == result.profiles[i].cegedim_customer_id_y.toLowerCase() &&
-                                result.profiles[i].doctor_name_x.toLowerCase() == result.profiles[i].doctor_name_y.toLowerCase() &&
-                                result.profiles[i].speciality_desc_x.toLowerCase() == result.profiles[i].speciality_desc_y.toLowerCase() &&
-                                result.profiles[i].locality_x.toLowerCase() == result.profiles[i].locality_y.toLowerCase() &&
-                                result.profiles[i].city_x.toLowerCase() == result.profiles[i].city_y.toLowerCase() &&
-                                result.profiles[i].postal_area_x.toLowerCase() == result.profiles[i].postal_area_y.toLowerCase() &&
-                                result.profiles[i].pincode_x.toLowerCase() == result.profiles[i].pincode_y.toLowerCase() &&
-                                result.profiles[i].district_x_name.toLowerCase() == result.profiles[i].district_y_name.toLowerCase() &&
-                                result.profiles[i].state_x.toLowerCase() == result.profiles[i].state_y.toLowerCase() &&
-                                result.profiles[i].email_address_x.toLowerCase() == result.profiles[i].email_address_y.toLowerCase() &&
-                                result.profiles[i].phone_number_x.toLowerCase() == result.profiles[i].phone_number_y.toLowerCase() &&
-                                result.profiles[i].registration_number_x.toLowerCase() == result.profiles[i].registration_number_y.toLowerCase() &&
-                                result.profiles[i].images_x.toLowerCase() == result.profiles[i].images_y.toLowerCase() &&
-                                result.profiles[i].location_x.toLowerCase() == result.profiles[i].location_x.toLowerCase())
-                            {
-                                //profile status = 1, req.body.status = 1 and all x and y data also same; 
-                                console.log("reach at status 1");
-                                result.update({ status : 1 });
-                                flag = 1;   
-                            }
-                            else{
-                                //profile status = 1 and req.body.status = 1;
-                                console.log("reach at status 3");
-                                result.update({ status : 3 });
-                                flag = 3;
-                            }
-                        }
-                        else{
-                            //profile status = 1 and req.body.status = 2;
-                            console.log("reason to change status", req.body.status);
-                            console.log("reach at status 2");
-                            var addressObj = JSON.parse(JSON.stringify(req.body.address))
-                            console.log("req.body.address",addressObj);
-                            result.update(
-                                {
-                                     status : 2
-                                });
-                                flag = 2;
-                                break;
-                        }
-                    }                    
-                    if(result.profiles[i].status == 2 || req.body.status == 2){
-                        //any status is 2 but if any status is 0 then no changes
-                        console.log("reason to change status1", req.body.status);
-                        console.log("reach at status 2");
-                        result.update(
-                            { 
-                                status : 2,
-                         });
-                        flag = 2;
-                    }
-                }
-                console.log("flag", flag);
-                if(flag == 0){
-                    return res.send("Status is 0, No need to update.")
-                }
-                if(flag == 1){
-                    profiles.update({
-                        status : 1
-                    },{ where: { id : profileId }});
-                }
-                if(flag == 2){
-                    profiles.update({
-                        status : 2,
-                        reason: req.body.reason,
-                        },{ where: { id : profileId }});
-                }
-                if(flag == 3){
-                    console.log("Group Status is 3");
-                }
-                
-                for(i=0; i<result.profiles.length; i++){
-                    if(result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
-                    var addressObj = JSON.parse(JSON.stringify(req.body.address))
-                    // console.log("req.body.address",addressObj);
-                        // console.log(result.profiles[1].address_x);
-                        if(result.profiles[i].address_x.address == undefined || result.profiles[i].address_x.address == null){
-                            // console.log(result.profiles[i].address_x.address); 
-                            // console.log("updateed profile: ", result.profiles[i].id);
-                            profiles.update({
-                            address_x: addressObj
-                            },{ where: { cegedim_customer_id_x : req.body.cegedim_customer_id_x, emp_position_code: empId }});
-                        }else{
-                            console.log("updateed profile: ", result.profiles[i].id);
-                            console.log("Addres updated already");
-                        }
-                    }
-                }
-                return res.send(result)                               
-            }else{
-                return res.status(200).send({message: "No Status found in req.body"})
-            }
+        var data = await profiles.findOne({
+            where: { id: profileId }
         })
+        if(data.status == 0){
+            profilegroup.findByPk(groupId, { include: ['profiles']})
+            .then (async result => {
+                let count = 0;
+                if(req.body.status == 0){
+                    return res.status(400).send({message: "Invalid Request"});
+                }
+                
+                else if(req.body.status == 1 || req.body.status == 2){    
+                    
+                    for(i=0; i<result.profiles.length; i++){
+                        if(result.profiles[i].id == data.id){
+                            continue;
+                        }
+                        if(result.profiles[i].status == 0){
+                            flag = 0;
+                            break;
+                        }else{
+                            if(result.profiles[i].status == 1){
+                                if(result.profiles[i].status == 1 && req.body.status == 1){
+                                    count++;
+                                    flag = 1;   
+                                }
+                                else{
+                                    //profile status = 1 and req.body.status = 2;
+                                    if(req.body.reason != undefined || req.body.reason != null || req.body.reason != ''){
+                                        var addressObj = JSON.parse(JSON.stringify(req.body.address))
+                                        result.update({
+                                            status : 2
+                                        });
+                                        flag = 2;
+                                        break;
+                                    }else{
+                                        return res.status(400).send({ message: "No reason found." })    
+                                    }
+                                }
+                            }                    
+                            if(result.profiles[i].status == 2 || req.body.status == 2){
+                                if(req.body.reason != undefined || req.body.reason != null || req.body.reason != ''){
+                                    //any status is 2 but if any status is 0 then no changes
+                                    result.update({ 
+                                        status : 2,
+                                    });
+                                    flag = 2;
+                                }else{
+                                    return res.status(400).send({ message: "No reason found." })
+                                }
+                                
+                            }
+                        }
+                    }
+                    if(flag == 0){
+                        profiles.update({
+                            status : req.body.status
+                        },{ where: { id : profileId }});
+                    }
+                    if(flag == 1){
+                        if(count == result.profiles.length-1){
+                            var uniqueProfiles = [];
+                            var map = new Map();
+                            for (item of result.profiles) {
+                                if(!map.has(item.cegedim_customer_id_x)){
+                                    map.set(item.cegedim_customer_id_x, true);    // set any value to Map
+                                    uniqueProfiles.push({
+                                        cegedim_customer_id: item.cegedim_customer_id_x,
+                                        doctor_name : item.doctor_name_x,
+                                        speciality_desc: item.speciality_desc_x,
+                                        locality: item.locality_x,
+                                        city: item.city_x,
+                                        postal_area: item.postal_area_x,
+                                        pincode: item.pincode_x,
+                                        district_name: item.district_x_name,
+                                        state: item.state_x
+                                    });
+                                }
+                                if(!map.has(item.cegedim_customer_id_y)){
+                                    map.set(item.cegedim_customer_id_y, true);    // set any value to Map
+                                    uniqueProfiles.push({
+                                        cegedim_customer_id: item.cegedim_customer_id_y,
+                                        doctor_name : item.doctor_name_y,
+                                        speciality_desc: item.speciality_desc_y,
+                                        locality: item.locality_y,
+                                        city: item.city_y,
+                                        postal_area: item.postal_area_y,
+                                        pincode: item.pincode_y,
+                                        district_name: item.district_name_y,
+                                        state: item.state_y
+                                    });
+                                }
+                            }
+                            // console.log("unique arr", uniqueProfiles);
+                            var tempProf = {};
+                            var flag = 0;
+                            var temp = {};
+                            if((temp.doctor_name == undefined || temp.doctor_name == null) ||
+                            (temp.speciality_desc == undefined || temp.speciality_desc == null) ||
+                            (temp.locality == undefined || temp.locality == null) ||
+                            (temp.city == undefined || temp.city == null) ||
+                            (temp.postal_area == undefined || temp.postal_area == null) ||
+                            (temp.pincode == undefined || temp.pincode == null) ||
+                            (temp.district_name == undefined || temp.district_name == null) ||
+                            (temp.state == undefined || temp.state == null)
+                            ){
+                                for(i=0; i<uniqueProfiles.length-1; i++){
+                                    if(temp.doctor_name == undefined || temp.doctor_name == null){
+                                        temp.doctor_name = uniqueProfiles[i].doctor_name;
+                                    }
+                                    if(temp.speciality_desc == undefined || temp.speciality_desc == null){
+                                        temp.speciality_desc = uniqueProfiles[i].speciality_desc;
+                                    }
+                                    if(temp.locality == undefined || temp.locality == null){
+                                        temp.locality = uniqueProfiles[i].locality;
+                                    }
+                                    if(temp.city == undefined || temp.city == null){
+                                        temp.city = uniqueProfiles[i].city;
+                                    }
+                                    if(temp.postal_area == undefined || temp.postal_area == null){
+                                        temp.postal_area = uniqueProfiles[i].postal_area;
+                                    }
+                                    if(temp.pincode == undefined || temp.pincode == null){
+                                        temp.pincode = uniqueProfiles[i].pincode;
+                                    }
+                                    if(temp.district_name == undefined || temp.district_name == null){
+                                        temp.district_name = uniqueProfiles[i].district_name;
+                                    }
+                                    if(temp.state == undefined || temp.state == null){
+                                        temp.state = uniqueProfiles[i].state;
+                                    }
+                                }
+                            }
+                            for(i=0; i<uniqueProfiles.length; i++){
+                                if((uniqueProfiles[i].doctor_name == undefined || uniqueProfiles[i].doctor_name == null || uniqueProfiles[i].doctor_name.toLowerCase() == temp.doctor_name.toLowerCase()) &&
+                                    (uniqueProfiles[i].speciality_desc == undefined || uniqueProfiles[i].speciality_desc == null || uniqueProfiles[i].speciality_desc.toLowerCase() == temp.speciality_desc.toLowerCase()) &&
+                                    (uniqueProfiles[i].locality == undefined || uniqueProfiles[i].locality == null || uniqueProfiles[i].locality.toLowerCase() == temp.locality.toLowerCase()) &&
+                                    (uniqueProfiles[i].pincode == undefined || uniqueProfiles[i].pincode == null || uniqueProfiles[i].pincode.toLowerCase() == temp.pincode.toLowerCase()) &&
+                                    (uniqueProfiles[i].city == undefined || uniqueProfiles[i].city == null || uniqueProfiles[i].city.toLowerCase() == temp.city.toLowerCase()) &&
+                                    (uniqueProfiles[i].postal_area == undefined || uniqueProfiles[i].postal_area == null || uniqueProfiles[i].postal_area.toLowerCase() == temp.postal_area.toLowerCase()) &&
+                                    (uniqueProfiles[i].district_name == undefined || uniqueProfiles[i].district_name == null || uniqueProfiles[i].district_name.toLowerCase() == temp.district_name.toLowerCase()) &&
+                                    (uniqueProfiles[i].state == undefined || uniqueProfiles[i].state == null || uniqueProfiles[i].state.toLowerCase() == temp.state.toLowerCase())
+                                ){
+                                    // console.log("city", temp.city);
+                                    tempProf.doctor_name = temp.doctor_name;
+                                    tempProf.speciality_desc = temp.speciality_desc;
+                                    tempProf.locality = temp.locality;
+                                    tempProf.city = temp.city;
+                                    tempProf.postal_area = temp.postal_area;
+                                    tempProf.pincode = temp.pincode;
+                                    tempProf.district_name = temp.district_name;
+                                    tempProf.state = temp.state;
+                                    console.log("Success");
+                                    status_flag = 1;
+                                }else{
+                                    console.log("Not done");
+                                    status_flag = 3; 
+                                    break;
+                                }  
+                            }
+                            if(status_flag == 1){
+                                result.update({ status : 1 });
+                                profiles.update({
+                                    status : req.body.status
+                                },{ where: { id : profileId }});
+                            }
+                            if(status_flag == 3){
+                                result.update({ status : 3 });
+                                profiles.update({
+                                    status : req.body.status
+                                    },{ where: { id : profileId }});
+                            }
+                        }
+                    }
+                    if(flag == 2){
+                        profiles.update({
+                            status : req.body.status,
+                            reason: req.body.reason,
+                            },{ where: { id : profileId }});
+                    }
+
+                    // console.log("unnique Profiles: ", tempProf);
+                    unique_profile.create(tempProf);
+                    for(i=0; i<result.profiles.length; i++){
+                        if(result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
+                            var addressObj = JSON.parse(JSON.stringify(req.body.address))
+                            if(result.profiles[i].address_x.address == undefined || result.profiles[i].address_x.address == null){
+                                profiles.update({
+                                address_x: addressObj
+                                },{ where: { cegedim_customer_id_x : req.body.cegedim_customer_id_x, emp_position_code: empId }});
+                            }
+                        }
+                    }
+                    return res.send(result);
+                }else{
+                    return res.status(200).send({message: "No Status found in req.body"})
+                }
+            })
+        }
+        else{
+            return res.status(400).send({message: "Invalid update request"});
+        }
 }
