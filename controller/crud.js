@@ -1,4 +1,4 @@
-const { User, Users, profiles, profilegroup, profilemaster, unique_profile } = require('../core/connection');
+const { User, Users, profiles, profilegroup, profilemaster, unique_profile, SpecialRequest } = require('../core/connection');
 var express = require('express');
 var app = express();
 var Sequelize = require('sequelize');
@@ -411,7 +411,6 @@ exports.updateProfiles = async (req, res) => {
                                     flag = 1;   
                                 }
                                 else{
-                                    //profile status = 1 and req.body.status = 2;
                                     if(req.body.reason != undefined || req.body.reason != null || req.body.reason != ''){
                                         var addressObj = JSON.parse(JSON.stringify(req.body.address))
                                         result.update({
@@ -426,7 +425,6 @@ exports.updateProfiles = async (req, res) => {
                             }                    
                             if(result.profiles[i].status == 2 || req.body.status == 2){
                                 if(req.body.reason != undefined || req.body.reason != null || req.body.reason != ''){
-                                    //any status is 2 but if any status is 0 then no changes
                                     result.update({ 
                                         status : 2,
                                     });
@@ -449,7 +447,7 @@ exports.updateProfiles = async (req, res) => {
                             var map = new Map();
                             for (item of result.profiles) {
                                 if(!map.has(item.cegedim_customer_id_x)){
-                                    map.set(item.cegedim_customer_id_x, true);    // set any value to Map
+                                    map.set(item.cegedim_customer_id_x, true);
                                     uniqueProfiles.push({
                                         cegedim_customer_id: item.cegedim_customer_id_x,
                                         doctor_name : item.doctor_name_x,
@@ -463,7 +461,7 @@ exports.updateProfiles = async (req, res) => {
                                     });
                                 }
                                 if(!map.has(item.cegedim_customer_id_y)){
-                                    map.set(item.cegedim_customer_id_y, true);    // set any value to Map
+                                    map.set(item.cegedim_customer_id_y, true);
                                     uniqueProfiles.push({
                                         cegedim_customer_id: item.cegedim_customer_id_y,
                                         doctor_name : item.doctor_name_y,
@@ -477,7 +475,6 @@ exports.updateProfiles = async (req, res) => {
                                     });
                                 }
                             }
-                            // console.log("unique arr", uniqueProfiles);
                             var tempProf = {};
                             var flag = 0;
                             var temp = {};
@@ -527,7 +524,6 @@ exports.updateProfiles = async (req, res) => {
                                     (uniqueProfiles[i].district_name == undefined || uniqueProfiles[i].district_name == null || uniqueProfiles[i].district_name.toLowerCase() == temp.district_name.toLowerCase()) &&
                                     (uniqueProfiles[i].state == undefined || uniqueProfiles[i].state == null || uniqueProfiles[i].state.toLowerCase() == temp.state.toLowerCase())
                                 ){
-                                    // console.log("city", temp.city);
                                     tempProf.doctor_name = temp.doctor_name;
                                     tempProf.speciality_desc = temp.speciality_desc;
                                     tempProf.locality = temp.locality;
@@ -536,10 +532,8 @@ exports.updateProfiles = async (req, res) => {
                                     tempProf.pincode = temp.pincode;
                                     tempProf.district_name = temp.district_name;
                                     tempProf.state = temp.state;
-                                    console.log("Success");
                                     status_flag = 1;
                                 }else{
-                                    console.log("Not done");
                                     status_flag = 3; 
                                     break;
                                 }  
@@ -565,8 +559,8 @@ exports.updateProfiles = async (req, res) => {
                             },{ where: { id : profileId }});
                     }
 
-                    // console.log("unnique Profiles: ", tempProf);
                     unique_profile.create(tempProf);
+
                     for(i=0; i<result.profiles.length; i++){
                         if(result.profiles[i].cegedim_customer_id_x == result.profiles[i].emp_position_code){
                             var addressObj = JSON.parse(JSON.stringify(req.body.address))

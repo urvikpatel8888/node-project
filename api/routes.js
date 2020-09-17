@@ -2,6 +2,12 @@ module.exports = (app) => {
     const verify = require('../config/tokenverify.js');
     const crud = require('../controller/crud.js');
     const login = require('../controller/user-controller.js');
+    const special = require('../controller/special-requests.js');
+    var morgan = require('morgan');
+    var morganBody = require('morgan-body');
+
+    app.use(morgan('method: :method \nurl: :url \nresponse-time: :response-time \nstatus-code: :status \nreq-ip: :remote-addr'));
+    morganBody(app);
 
     app.get('/user',verify.verifyToken, crud.getuser);
     app.get('/users',verify.verifyToken, crud.getusers);
@@ -33,6 +39,13 @@ module.exports = (app) => {
     app.put('/psr/list/:empId/:profileId',  crud.updateProfiles);
     app.put('/psr/list/:profileId',  crud.updateProfile);
   
+    /* Special Requests */
+    app.get('/api/specialrequests', special.getrequest);
+    app.get('/api/specialrequests/:id', special.getbyidrequest);
+    app.post('/api/specialrequests', special.addrequest);
+    app.put('/api/specialrequests/:id', special.editrequest);
+    app.delete('/api/specialrequests/:id', special.deleterequest);
+
     /* Register and Auth */
     app.post('/reg', login.regUser);
     app.post('/auth', login.loginCheck);

@@ -9,6 +9,7 @@ const profile = require('../db/models/profiles');
 const profilesgroup = require('../db/models/profilegroup');
 const profilesmaster = require('../db/models/profilemaster');
 const uniqueProfile = require('../db/models/uniqueProfile');
+const SpecialRequests = require('../db/models/SpecialRequest');
 
 config = config[process.env.NODE_ENV];
 if(!config){
@@ -48,7 +49,7 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
   const profilegroup = profilesgroup(sequelize, Sequelize);
   const profilemaster = profilesmaster(sequelize, Sequelize);
   const unique_profile = uniqueProfile(sequelize, Sequelize);
-
+  const SpecialRequest = SpecialRequests(sequelize, Sequelize);
   
   Users.hasOne(User, { foreignKey: 'allId' });
   User.belongsTo(Users, { foreignKey: 'allId' , targetKey: 'allId' });
@@ -71,5 +72,5 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
   sequelize.sync();
 
   module.exports = {
-        sequelize, User, Users, user_userdata_mapping, newlogin, profiles, profilegroup, profilemaster, unique_profile
+        sequelize, User, Users, user_userdata_mapping, newlogin, profiles, profilegroup, profilemaster, unique_profile, SpecialRequest
   }

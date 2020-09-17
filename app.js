@@ -3,7 +3,8 @@ global.framework={};
 var express = require('express');
 var path = require('path');
 // var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var fs = require('fs');
+var morgan = require('morgan');
 // require('../core/migration');
 require('./core/models');
 // require('./core/connection');
@@ -12,6 +13,9 @@ const useImport = require('./config/use');
 // const checkJwt = require('./config/jwt');
 var app = express();
 var bodyParser = require('body-parser');
+app.use(morgan('common', {
+  stream: fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+}))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }));
 require('./api/routes.js')(app);
